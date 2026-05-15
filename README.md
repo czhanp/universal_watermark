@@ -1,4 +1,4 @@
-# universal-watermark
+﻿# universal-watermark
 
 [中文文档](README_zh-CN.md)
 
@@ -33,6 +33,51 @@ universal-watermark/
     watermark/
       ...
 ```
+
+### Install via npm
+
+Install the package globally, then install the skill into your local agent skill folders:
+
+```bash
+npm install -g @czhanp/universal-watermark-skill
+universal-watermark-skill install --all
+```
+
+This installs the skill into these folders when they are available or need to be created:
+
+```text
+~/.codex/skills/universal-watermark
+~/.claude/skills/universal-watermark
+~/.agents/skills/universal-watermark
+```
+
+You can also install for one agent only:
+
+```bash
+universal-watermark-skill install --target codex
+universal-watermark-skill install --target claude
+universal-watermark-skill install --target agents
+```
+
+Or run the installer without keeping the npm package globally:
+
+```bash
+npm exec --yes --package=@czhanp/universal-watermark-skill -- universal-watermark-skill install --all
+```
+
+To download a local copy instead of installing globally:
+
+```bash
+universal-watermark-skill download universal-watermark
+```
+
+After installation, install Python dependencies once and restart or reload your agent so it can discover the new skill:
+
+```bash
+pip install pillow lxml python-docx pymupdf python-pptx
+```
+
+This npm package is used as a skill distribution package. The actual watermarking logic is implemented in Python, so Python dependencies still need to be installed separately.
 
 ### What the Skill Does
 
@@ -439,3 +484,4 @@ pillow
 ## License
 
 MIT License is recommended for open-source release.
+

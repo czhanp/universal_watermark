@@ -1,0 +1,47 @@
+{
+  "name": "@czhanp/universal-watermark-skill",
+  "version": "0.1.1",
+  "description": "A multi-format watermarking Skill and CLI for documents, PDFs, spreadsheets, slides, images, and GIFs.",
+  "keywords": [
+    "watermark",
+    "watermark-generator",
+    "watermark-tool",
+    "chatgpt-skill",
+    "python",
+    "cli",
+    "pdf-watermark",
+    "docx-watermark",
+    "pptx-watermark",
+    "excel-watermark",
+    "image-watermark",
+    "gif-watermark"
+  ],
+  "homepage": "https://github.com/czhanp/universal_watermark#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/czhanp/universal_watermark.git"
+  },
+  "bugs": {
+    "url": "https://github.com/czhanp/universal_watermark/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "universal-watermark-skill": "bin/install.js"
+  },
+  "files": [
+    "bin/",
+    "SKILL.md",
+    "README.md",
+    "README_zh-CN.md",
+    "LICENSE",
+    "scripts/",
+    "!scripts/**/__pycache__/**",
+    "!scripts/**/*.pyc",
+    "!scripts/**/*.pyc.*",
+    "example/",
+    "examples/"
+  ]
+}

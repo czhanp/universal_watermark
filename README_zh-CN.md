@@ -1,4 +1,4 @@
-# universal-watermark
+﻿# universal-watermark
 
 [English](README.md)
 
@@ -29,7 +29,51 @@ universal-watermark/
     universal_watermark.py
     watermark/
       ...
+``
+### 通过 npm 安装 Skill
+
+推荐先全局安装 npm 包，再把 Skill 安装到本机 agent 的全局 skills 目录：
+
+```bash
+npm install -g @czhanp/universal-watermark-skill
+universal-watermark-skill install --all
 ```
+
+默认会安装到以下目录：
+
+```text
+~/.codex/skills/universal-watermark
+~/.claude/skills/universal-watermark
+~/.agents/skills/universal-watermark
+```
+
+也可以只安装到某一个 agent：
+
+```bash
+universal-watermark-skill install --target codex
+universal-watermark-skill install --target claude
+universal-watermark-skill install --target agents
+```
+
+如果不想全局保留 npm 包，也可以只执行一次安装器：
+
+```bash
+npm exec --yes --package=@czhanp/universal-watermark-skill -- universal-watermark-skill install --all
+```
+
+如果只想下载一份本地目录，而不是安装到全局 Skill 目录：
+
+```bash
+universal-watermark-skill download universal-watermark
+```
+
+安装后，单独安装 Python 依赖，并重启或重新加载 agent，让它发现新 Skill：
+
+```bash
+pip install pillow lxml python-docx pymupdf python-pptx
+```
+
+注意：该 npm 包主要用于分发 Skill 文件。本项目的实际水印处理逻辑仍然基于 Python，因此 Python 依赖需要单独安装。
 
 ### Skill 主要作用
 
@@ -456,3 +500,5 @@ pillow
 ## 开源协议
 
 推荐使用 MIT License。
+
+
