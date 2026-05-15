@@ -1,10 +1,27 @@
-﻿# universal-watermark
+# universal-watermark
 
 [English](README.md)
 
-一个支持 Word、PDF、PowerPoint、Excel、图片和 GIF 的多格式水印生成 **Skill / CLI 工具**。
+![License](https://img.shields.io/github/license/czhanp/universal_watermark)
+![Stars](https://img.shields.io/github/stars/czhanp/universal_watermark?style=social)
+![npm](https://img.shields.io/npm/v/@czhanp/universal-watermark-skill)
+![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 
-`universal-watermark` 可以自动识别文件格式，并为文件添加可配置的倾斜、平铺、半透明文字水印。工具会根据不同格式选择对应的处理方式，优先保持原格式输出，并且不会覆盖原文件。
+一个代码优先的多格式水印生成 **Agent Skill** 和 **Python CLI 工具**，支持 Word、PDF、PowerPoint、Excel、图片和 GIF。
+
+`universal-watermark` 可以自动识别文件格式，选择对应处理器，添加可见文字水印，并在不覆盖原文件的前提下生成新的带水印文件。
+
+## 为什么做这个项目？
+
+很多水印工具只支持单一格式，例如只处理 PDF 或图片。但实际工作里，文件往往是混合的：
+
+- Word、PDF、PPT、Excel、图片、GIF 都可能需要加水印；
+- 不同格式的水印插入方式完全不同；
+- 批量处理时不适合手工逐个转换；
+- 原文件不能被破坏或覆盖；
+- Agent / Codex / Claude Code 需要一个可以长期复用的 Skill。
+
+本项目的目标就是把这些流程统一成一个命令和一个可复用 Skill。
 
 ## 效果预览
 
@@ -12,164 +29,13 @@
 
 <img src="example/show.png" alt="universal-watermark 效果预览" width="100%">
 
----
-
-## 1. Skill 使用说明
-
-本项目首先可以作为一个可复用的水印处理 Skill 包使用。
-
-典型 Skill 包结构如下：
-
-```text
-universal-watermark/
-  SKILL.md
-  README.md
-  README_zh-CN.md
-  scripts/
-    universal_watermark.py
-    watermark/
-      ...
-``
-### 通过 npm 安装 Skill
-
-推荐先全局安装 npm 包，再把 Skill 安装到本机 agent 的全局 skills 目录：
-
-```bash
-npm install -g @czhanp/universal-watermark-skill
-universal-watermark-skill install --all
-```
-
-默认会安装到以下目录：
-
-```text
-~/.codex/skills/universal-watermark
-~/.claude/skills/universal-watermark
-~/.agents/skills/universal-watermark
-```
-
-也可以只安装到某一个 agent：
-
-```bash
-universal-watermark-skill install --target codex
-universal-watermark-skill install --target claude
-universal-watermark-skill install --target agents
-```
-
-如果不想全局保留 npm 包，也可以只执行一次安装器：
-
-```bash
-npm exec --yes --package=@czhanp/universal-watermark-skill -- universal-watermark-skill install --all
-```
-
-如果只想下载一份本地目录，而不是安装到全局 Skill 目录：
-
-```bash
-universal-watermark-skill download universal-watermark
-```
-
-安装后，单独安装 Python 依赖，并重启或重新加载 agent，让它发现新 Skill：
-
-```bash
-pip install pillow lxml python-docx pymupdf python-pptx
-```
-
-注意：该 npm 包主要用于分发 Skill 文件。本项目的实际水印处理逻辑仍然基于 Python，因此 Python 依赖需要单独安装。
-
-### Skill 主要作用
-
-当用户要求给文件添加水印时，Skill 应执行以下流程：
-
-```text
-识别文件类型
--> 选择对应格式的处理器
--> 生成透明平铺水印图层
--> 输出带水印的新文件
--> 不覆盖原始文件
-```
-
-### 适用请求
-
-该 Skill 适用于以下场景：
-
-```text
-给这个 Word 文档加水印
-给这个 PDF 添加平铺水印
-给这个 PPT 添加草稿水印
-给这个 Excel 表格添加水印
-给这张图片添加水印
-批量给这些文件加水印
-自动识别文件格式并添加水印
-```
-
-### 典型触发关键词
-
-```text
-水印
-添加水印
-加水印
-平铺水印
-半透明水印
-Word 水印
-PDF 水印
-PPT 水印
-Excel 水印
-图片水印
-GIF 水印
-批量水印
-```
-
-### Skill 处理原则
-
-- 自动识别真实文件格式；
-- 按不同文件格式选择不同处理逻辑；
-- 能保持原格式时优先保持原格式；
-- 不覆盖原始文件；
-- 仅在必要时转换旧格式文件；
-- 对 `.doc`、`.ppt`、`.xls`、`.rtf`、`.odt`、`.ods`、`.csv` 等格式说明转换风险。
-
-### Skill 分格式处理路线
-
-| 文件类型 | 处理路线 |
-|---|---|
-| `.docx` | 修改 DOCX 的 OOXML 页眉结构并插入整页透明水印图 |
-| `.doc`、`.rtf`、`.odt` | 转换为 `.docx` 或 `.pdf` 后处理 |
-| `.pdf` | 在每页叠加透明水印图 |
-| `.pptx` | 在每张幻灯片中插入水印图 |
-| `.ppt` | 转换为 `.pptx` 或 `.pdf` 后处理 |
-| `.xlsx`、`.xlsm` | 修改 Excel OOXML，添加背景或浮层水印 |
-| `.xls`、`.ods`、`.csv` | 转换为 `.xlsx` 或 `.pdf` 后处理 |
-| 图片 | 使用 Pillow 合成水印图层 |
-| `.gif` | 逐帧添加水印并重新保存 |
-
----
-
-## 2. CLI 使用方法
-
-除了作为 Skill 使用，本项目也可以直接作为 Python 命令行工具运行。
-
-### 安装依赖
+## 快速开始
 
 安装 Python 依赖：
 
 ```bash
 pip install pillow lxml python-docx pymupdf python-pptx
 ```
-
-可选依赖：
-
-```bash
-pip install cairosvg python-magic pillow-heif
-```
-
-如果需要处理 `.doc`、`.ppt`、`.xls`、`.rtf`、`.odt`、`.ods`、`.csv` 等旧格式或非 OOXML 格式，请安装 LibreOffice，并确保 `soffice` 或 `libreoffice` 命令可在系统 PATH 中使用。
-
-Windows 常见安装路径：
-
-```text
-C:\Program Files\LibreOffice\program\soffice.exe
-```
-
-### 快速开始
 
 给单个文件添加水印：
 
@@ -189,27 +55,73 @@ python scripts/universal_watermark.py a.docx b.pdf c.pptx table.xlsx image.jpg -
 python scripts/universal_watermark.py input.pdf --text "试用水印" --font-path "C:\Windows\Fonts\msyh.ttc"
 ```
 
-### 常用命令示例
+## 作为 Agent Skill 安装
 
-#### Word / DOCX
+本仓库可以作为本地 Skill 安装到 Codex、Claude Code 或其他 agent 的 skills 目录中。
+
+```bash
+npm install -g @czhanp/universal-watermark-skill
+universal-watermark-skill install --all
+```
+
+默认安装到以下目录：
+
+```text
+~/.codex/skills/universal-watermark
+~/.claude/skills/universal-watermark
+~/.agents/skills/universal-watermark
+```
+
+也可以只安装到某一个目标：
+
+```bash
+universal-watermark-skill install --target codex
+universal-watermark-skill install --target claude
+universal-watermark-skill install --target agents
+```
+
+如果不想全局保留 npm 包，可以只执行一次安装器：
+
+```bash
+npm exec --yes --package=@czhanp/universal-watermark-skill -- universal-watermark-skill install --all
+```
+
+注意：npm 包主要用于分发 Skill 文件，实际水印处理逻辑仍然基于 Python，因此 Python 依赖需要单独安装。
+
+## 支持格式
+
+| 类型 | 支持格式 |
+|---|---|
+| Word | `.docx`、`.doc`、`.rtf`、`.odt` |
+| PDF | `.pdf` |
+| PowerPoint | `.pptx`、`.ppt` |
+| Excel | `.xlsx`、`.xlsm`、`.xltx`、`.xltm`、`.xls`、`.ods`、`.csv` |
+| 图片 | `.png`、`.jpg`、`.jpeg`、`.webp`、`.bmp`、`.tif`、`.tiff` |
+| 动图 | `.gif` |
+
+说明：`.doc`、`.ppt`、`.xls`、`.rtf`、`.odt`、`.ods`、`.csv` 等旧格式或非 OOXML 格式通常需要借助 LibreOffice 转换后再处理。
+
+## 常用命令示例
+
+### Word / DOCX
 
 ```bash
 python scripts/universal_watermark.py report.docx --text "试用水印" --angle 45 --opacity 0.18
 ```
 
-#### PDF
+### PDF
 
 ```bash
 python scripts/universal_watermark.py paper.pdf --text "内部资料" --opacity 0.15
 ```
 
-#### PowerPoint
+### PowerPoint
 
 ```bash
 python scripts/universal_watermark.py slides.pptx --text "草稿" --angle -45
 ```
 
-#### Excel
+### Excel
 
 使用工作表背景水印：
 
@@ -229,19 +141,19 @@ python scripts/universal_watermark.py table.xlsx --text "试用水印" --excel-m
 python scripts/universal_watermark.py table.xlsx --text "试用水印" --excel-mode both --opacity 0.10
 ```
 
-#### 图片
+### 图片
 
 ```bash
 python scripts/universal_watermark.py image.jpg --text "试用水印"
 ```
 
-#### GIF 动图
+### GIF 动图
 
 ```bash
 python scripts/universal_watermark.py animation.gif --text "试用水印"
 ```
 
-#### 旧版 Office 文件
+### 旧版 Office 文件
 
 优先转换为可编辑的新格式后加水印：
 
@@ -257,38 +169,11 @@ python scripts/universal_watermark.py old.xls --legacy-target editable
 python scripts/universal_watermark.py old.doc --legacy-target pdf
 ```
 
----
+## 水印排布方式
 
-## 3. 支持格式
+### `checkerboard`：交叉留空式排布
 
-| 类型 | 支持格式 |
-|---|---|
-| Word | `.docx`、`.doc`、`.rtf`、`.odt` |
-| PDF | `.pdf` |
-| PowerPoint | `.pptx`、`.ppt` |
-| Excel | `.xlsx`、`.xlsm`、`.xltx`、`.xltm`、`.xls`、`.ods`、`.csv` |
-| 图片 | `.png`、`.jpg`、`.jpeg`、`.webp`、`.bmp`、`.tif`、`.tiff` |
-| 动图 | `.gif` |
-
-说明：`.doc`、`.ppt`、`.xls`、`.rtf`、`.odt`、`.ods`、`.csv` 等旧格式或非 OOXML 格式需要借助 LibreOffice 转换后再处理。
-
----
-
-## 4. 水印排布方式
-
-### checkerboard：交叉留空式排布
-
-`checkerboard` 是推荐的视觉方案。它按照“文字槽 / 空槽”交替的方式排布水印：
-
-```text
-文字 + 横向间距 + 空槽 + 横向间距 + 文字
-空槽 + 横向间距 + 文字 + 横向间距 + 空槽
-文字 + 横向间距 + 空槽 + 横向间距 + 文字
-```
-
-这种排布比传统密集平铺更清爽，不容易形成明显的阶梯状视觉压迫。
-
-示例命令：
+`checkerboard` 是推荐的视觉方案。它按照“文字槽 / 空槽”交替的方式排布水印，比传统密集平铺更清爽，不容易形成明显的阶梯状视觉压迫。
 
 ```bash
 python scripts/universal_watermark.py input.pdf \
@@ -299,26 +184,15 @@ python scripts/universal_watermark.py input.pdf \
   --empty-slot-multiplier 1.0
 ```
 
-推荐参数：
+### `staggered`：传统错行平铺
 
-```bash
---layout checkerboard
---spacing-x-font-multiplier 2.0
---spacing-y-font-multiplier 3.0
---empty-slot-multiplier 1.0
-```
-
-### staggered：传统错行平铺
-
-`staggered` 是传统水印排布方式，每一行都有水印，奇偶行横向错开半个间距：
+`staggered` 是传统水印排布方式，每一行都有水印，奇偶行横向错开半个间距。
 
 ```bash
 python scripts/universal_watermark.py input.pdf --text "试用水印" --layout staggered
 ```
 
----
-
-## 5. 常用参数
+## 常用参数
 
 | 参数 | 说明 | 示例 |
 |---|---|---|
@@ -327,21 +201,19 @@ python scripts/universal_watermark.py input.pdf --text "试用水印" --layout s
 | `--opacity` | 水印透明度，范围 `0` 到 `1` | `--opacity 0.18` |
 | `--color` | 水印颜色，支持 RGB 或十六进制 | `--color "#808080"` |
 | `--font-path` | 字体文件路径 | `--font-path "C:\Windows\Fonts\msyh.ttc"` |
-| `--font-size-ratio` | 字号相对于页面宽度的比例 | `--font-size-ratio 0.055` |
 | `--layout` | 水印排布方式 | `--layout checkerboard` |
-| `--spacing-x-ratio` | 横向间距，按页面宽度比例计算 | `--spacing-x-ratio 0.32` |
-| `--spacing-y-ratio` | 纵向间距，按页面高度比例计算 | `--spacing-y-ratio 0.18` |
-| `--spacing-x-font-multiplier` | 横向间距，按字体行高倍数计算 | `--spacing-x-font-multiplier 2.0` |
-| `--spacing-y-font-multiplier` | 纵向间距，按字体行高倍数计算 | `--spacing-y-font-multiplier 3.0` |
-| `--empty-slot-multiplier` | 空槽宽度相对于文字槽宽度的倍数 | `--empty-slot-multiplier 1.0` |
 | `--output-dir` | 输出目录 | `--output-dir watermarked` |
 | `--suffix` | 输出文件名后缀 | `--suffix "_加水印"` |
 | `--legacy-target` | 旧格式文件转换目标 | `--legacy-target editable` |
 | `--excel-mode` | Excel 水印模式 | `--excel-mode background` |
 
----
+使用高级参数前建议查看当前脚本帮助：
 
-## 6. Excel 水印模式说明
+```bash
+python scripts/universal_watermark.py --help
+```
+
+## Excel 水印模式说明
 
 Excel 没有像 Word 那样真正的“正文后方水印层”，因此本项目提供三种实用模式：
 
@@ -363,20 +235,16 @@ Excel 没有像 Word 那样真正的“正文后方水印层”，因此本项�
 --excel-mode overlay --opacity 0.12
 ```
 
----
+## 输出规则
 
-## 7. 输出规则
-
-本工具不会覆盖原文件，而是生成新文件。
-
-示例：
+本工具默认不会覆盖原文件，而是生成新文件。
 
 ```text
-report.docx      -> report_加水印.docx
-paper.pdf        -> paper_加水印.pdf
-slides.pptx      -> slides_加水印.pptx
-table.xlsx       -> table_加水印.xlsx
-image.jpg        -> image_加水印.jpg
+report.docx    -> report_加水印.docx
+paper.pdf      -> paper_加水印.pdf
+slides.pptx    -> slides_加水印.pptx
+table.xlsx     -> table_加水印.xlsx
+image.jpg      -> image_加水印.jpg
 ```
 
 如果输出目录里已经存在同名文件，会自动追加编号：
@@ -387,24 +255,22 @@ report_加水印_1.docx
 report_加水印_2.docx
 ```
 
----
-
-## 8. 项目结构
+## 项目结构
 
 ```text
 universal-watermark/
   SKILL.md
   README.md
   README_zh-CN.md
+  LICENSE
+  package.json
+  bin/
+    install.js
   scripts/
     universal_watermark.py
     watermark/
-      __init__.py
-      options.py
-      constants.py
-      common.py
+      cli.py
       detector.py
-      converters.py
       dispatcher.py
       word.py
       pdf.py
@@ -412,44 +278,26 @@ universal-watermark/
       excel.py
       image.py
       gif.py
+      converters.py
+      common.py
+      options.py
+      constants.py
       svg.py
-      cli.py
+  example/
 ```
 
-各模块职责如下：
-
-| 模块 | 作用 |
-|---|---|
-| `universal_watermark.py` | 主入口文件 |
-| `cli.py` | 命令行参数解析 |
-| `dispatcher.py` | 根据文件类型分发到不同处理器 |
-| `detector.py` | 文件类型识别 |
-| `common.py` | 通用工具函数，包括字体、水印图层、OOXML 辅助函数 |
-| `converters.py` | LibreOffice 格式转换工具 |
-| `word.py` | Word / DOCX 水印处理 |
-| `pdf.py` | PDF 水印处理 |
-| `ppt.py` | PowerPoint / PPTX 水印处理 |
-| `excel.py` | Excel / XLSX / XLSM 水印处理 |
-| `image.py` | 静态图片水印处理 |
-| `gif.py` | GIF 动图逐帧水印处理 |
-| `svg.py` | SVG 转换后水印处理 |
-
----
-
-## 9. 注意事项与限制
+## 注意事项与限制
 
 - `.doc`、`.ppt`、`.xls` 等旧版 Office 文件需要先转换后处理；
 - LibreOffice 转换可能造成轻微版式差异；
-- PDF 水印通常是覆盖在页面内容上方，建议使用较低透明度；
+- PDF 水印通常覆盖在页面内容上方，建议使用较低透明度；
 - Excel 的 `background` 模式通常不参与打印；
 - Excel 的 `overlay` 模式更适合打印，但可能影响表格编辑；
 - GIF 重新保存后可能因调色板限制产生轻微画质变化；
 - 超大图片或多页 TIFF 可能占用较多内存；
 - 加密 PDF 需要具备相应权限后才能处理。
 
----
-
-## 10. 开发与维护
+## 开发与维护
 
 检查 Python 文件语法：
 
@@ -465,40 +313,17 @@ python scripts/universal_watermark.py --help
 
 维护建议：
 
-- 调整 Word 水印逻辑：修改 `scripts/watermark/word.py`
-- 调整 PDF 水印逻辑：修改 `scripts/watermark/pdf.py`
-- 调整 PowerPoint 水印逻辑：修改 `scripts/watermark/ppt.py`
-- 调整 Excel 水印逻辑：修改 `scripts/watermark/excel.py`
-- 调整图片水印逻辑：修改 `scripts/watermark/image.py`
-- 调整 GIF 水印逻辑：修改 `scripts/watermark/gif.py`
-- 调整水印排布和间距：修改 `scripts/watermark/common.py` 和 `scripts/watermark/options.py`
-
----
-
-## 推荐 GitHub Topics
-
-```text
-watermark
-watermark-generator
-watermark-tool
-python
-cli
-pdf-watermark
-docx-watermark
-pptx-watermark
-excel-watermark
-image-watermark
-chatgpt-skill
-office-automation
-libreoffice
-pymupdf
-pillow
-```
-
----
+| 模块 | 作用 |
+|---|---|
+| `scripts/watermark/word.py` | Word / DOCX 水印处理 |
+| `scripts/watermark/pdf.py` | PDF 水印处理 |
+| `scripts/watermark/ppt.py` | PowerPoint / PPTX 水印处理 |
+| `scripts/watermark/excel.py` | Excel / XLSX / XLSM 水印处理 |
+| `scripts/watermark/image.py` | 静态图片水印处理 |
+| `scripts/watermark/gif.py` | GIF 动图逐帧水印处理 |
+| `scripts/watermark/common.py` | 通用水印图层、字体和 OOXML 工具 |
+| `scripts/watermark/options.py` | 水印参数定义 |
 
 ## 开源协议
 
-推荐使用 MIT License。
-
-
+MIT License。
