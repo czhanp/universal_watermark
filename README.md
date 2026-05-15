@@ -8,6 +8,15 @@ A multi-format watermarking **Skill** and Python CLI for adding customizable tex
 
 ---
 
+## Preview
+
+The following preview shows watermark effects on PDF, Word, image, Excel, and PowerPoint files.
+
+<img src="example/show.png" alt="universal-watermark preview" width="100%">
+
+---
+
+
 ## 1. Skill Usage
 
 This project is designed first as a reusable watermarking skill package.

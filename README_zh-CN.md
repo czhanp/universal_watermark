@@ -6,6 +6,12 @@
 
 `universal-watermark` 可以自动识别文件格式，并为文件添加可配置的倾斜、平铺、半透明文字水印。工具会根据不同格式选择对应的处理方式，优先保持原格式输出，并且不会覆盖原文件。
 
+## 效果预览
+
+下图展示了本工具对 PDF、Word、图片、Excel 和 PowerPoint 文件添加水印后的效果。
+
+<img src="example/show.png" alt="universal-watermark 效果预览" width="100%">
+
 ---
 
 ## 1. Skill 使用说明
